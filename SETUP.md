@@ -2,7 +2,7 @@
 
 [source chat](https://gemini.google.com/app/a4d5a19ad6a2134e) 3 August 2026 LMK
 
-0. **Directory Structure**
+## **Directory Structure**
 
 ```
 Code/
@@ -14,7 +14,7 @@ Code/
     └── cpp-httplib/   # Upstream cpp-httplib repository
 ```
 
-1. **Fedora Environment & CyberGym Harness Setup**
+## **Fedora Environment & CyberGym Harness Setup**
 
 ```bash
 #!/usr/bin/env bash
@@ -30,97 +30,45 @@ sudo usermod -aG docker $USER
 git clone https://github.com/sunblaze-ucb/cybergym.git
 cd cybergym
 
-# Step 4: Create a Python virtual environment and install dependencies
-python3 -m venv venv
+# Step 4: Setup and run CyberGym (including reset)
+
+# 1. Stop any lingering containers/networks
+docker rm -f cybergym-proxy cybergym-server 2>/dev/null
+docker network rm cybergym-internal 2>/dev/null
+
+# 2. Activate virtual environment and install full backend suite
 source venv/bin/activate
-pip install --upgrade pip
-pip install docker
-pip install -e .
+pip install uvicorn fastapi pydantic pydantic-settings docker requests httpx jinja2 sqlalchemy sqlmodel python-multipart
 
-# Step 4.5: Docker setup
-# Manually pull the missing proxy base image into local Docker cache
-docker pull ubuntu/squid:latest
-# Build or pull all required base images for CyberGym (if applicable)
-docker pull ubuntu:22.04
-
-# Step 5: Start CyberGym internal firewall proxy (isolates test containers)
+# 3. Start the proxy container
 python3 -m cybergym.firewall start
 
-```
+# 4. Get gateway IP and launch evaluation server
+HOST=$(docker network inspect cybergym-internal -f '{{(index .IPAM.Config 0).Gateway}}')
 
----
-
-2. **Project Setup & Reproductions (Vulnerable vs. Fixed)**
-2a. **cJSON**
-```bash
-# Clone upstream repo
-git clone https://github.com/DaveGamble/cJSON.git target_repos/cjson
-cd target_repos/cjson
-
-# Vulnerable commit (e.g., CVE-2020-36518 / buffer issue baseline)
-git checkout -b vulnerable 23ed12c6a4613ab7a942a6c1184ffbe32c7e1933
-
-# Fixed commit
-git checkout -b fixed c9d4e5f7a08ec73d098e217590d984cfb7764f69
+python3 -m cybergym.server \
+  --host $HOST \
+  --port 8666 \
+  --mask_map_path mask_map.json \
+  --log_dir ./server_poc \
+  --db_path ./server_poc/poc.db
 
 ```
 
+## Test a project
 
-2b. **cxxopts**
-```bash
-git clone https://github.com/jarro2783/cxxopts.git target_repos/cxxopts
-cd target_repos/cxxopts
-
-# Vulnerable version commit
-git checkout -b vulnerable 3023021ed90333d838321d28362d530bf80313f8
-
-# Fixed version commit
-git checkout -b fixed 2101e4ec9d92e5917edc82a52df0fb12db3b15f5
+### Prepare context
 
 ```
+cd /home/lmk/Code/justbugs/cjson
+source ../../cybergym/venv/bin/activate
 
+HOST=$(docker network inspect cybergym-internal -f '{{(index .IPAM.Config 0).Gateway}}')
 
-2c. **fast_float**
-```bash
-git clone https://github.com/fastfloat/fast_float.git target_repos/fast_float
-cd target_repos/fast_float
-
-# Vulnerable version commit
-git checkout -b vulnerable 2a832626e2e50304381e4a7065cb552c67cf7bd2
-
-# Fixed version commit
-git checkout -b fixed 0f5a70634f19b26b38c2efcfb10166d3a436e297
-
+# Submit evaluation run using a valid task ID from mask_map.json (e.g. arvo:10013)
+python3 -m cybergym eval \
+  --server "http://${HOST}:8666" \
+  --task-id "arvo:10013" \
+  --repo-path .
 ```
 
-
-2d. **cpp-httplib**
-```bash
-git clone https://github.com/yhirose/cpp-httplib.git target_repos/cpp-httplib
-cd target_repos/cpp-httplib
-
-# Vulnerable version commit
-git checkout -b vulnerable 1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b **(confidence 60%)**
-
-# Fixed version commit
-git checkout -b fixed 2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1 **(confidence 60%)**
-
-```
-
----
-
-3. **Verification & Submission Command**
-
-> IMPORTANT: see `README.md` for using CyberGym, not the following
-
-```bash
-# Submit a patch or altered source tree back to CyberGym evaluator
-python3 -m cybergym.eval \
-  --task-id cjson_bug_01 \
-  --source-path ./target_repos/cjson \
-  --server-host 127.0.0.1 \
-  --timeout 300
-
-```
-
----

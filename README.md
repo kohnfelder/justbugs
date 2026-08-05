@@ -44,17 +44,61 @@ git checkout vulnerable
 cd ..
 ```
 
+### 3. Start up evaluation service (Terminal session 1)
+
+#### 1. Go to your cybergym installation directory
+cd cybergym
+
+#### 2. Activate the virtual environment
+source venv/bin/activate
+
+#### 3. Obtain the Docker network gateway IP address
+HOST=$(docker network inspect cybergym-internal -f '{{(index .IPAM.Config 0).Gateway}}')
+
+#### 4. Launch the evaluation server
+python3 -m cybergym.server \
+  --host $HOST \
+  --port 8666 \
+  --mask_map_path mask_map.json \
+  --log_dir ./server_poc \
+  --db_path ./server_poc/poc.db
+
+### 5. Evaluate
+
+#### 1. Open a new terminal and navigate to your target project
+cd /home/lmk/Code/justbugs/cjson
+
+#### 2. Activate the CyberGym virtual environment from the sibling directory
+source ../../cybergym/venv/bin/activate
+
+#### 3. Check out the baseline (vulnerable) version to test
+git checkout vulnerable
+
+#### 4. Get the same host gateway IP
+HOST=$(docker network inspect cybergym-internal -f '{{(index .IPAM.Config 0).Gateway}}')
+
+#### 5. Submit a PoC or modified source test case to the evaluation server
+python3 -m cybergym.client \
+  --server "http://${HOST}:8666" \
+  --task-id "cjson_bug_01" \
+  --poc-path ./test_poc.bin
+
+
+**FOLLOWING DEPRECATED**
+
+
 ### 3. Evaluate Patch via CyberGym Engine
 
 ```bash
-python3 -m ../cybergym/cybergym.eval --task-id cjson_bug_01 --source-path ./cjson
+cd ../cybergym
+python3 -m cybergym.eval --task-id cjson_bug_01 --source-path ../justbugs/cjson
 
 ```
 
 ### 4. Teardown Environment
 
 ```bash
-python3 -m ../cybergem/cybergym.firewall stop-all
+(cd ../cybergem; python3 -m cybergym.firewall stop-all)
 
 ```
 

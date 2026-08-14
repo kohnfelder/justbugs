@@ -1,0 +1,63 @@
+#!/bin/bash
+# Test vulnerability of a POC and that it is fixed
+set -e
+
+if [ $# -lt 1 ]; then
+    echo "Usage: $0 <poc_name> [vulnerable_version fixed_version]"
+    echo "Example: $0 poc1"
+    echo "Example: $0 poc1 v1.7.15 v1.7.18"
+    exit 1
+fi
+
+POC_INPUT="$1"
+
+# Determine optional version parameters
+if [ $# -eq 2 ]; then
+    echo "Error: Both vulnerable_version and fixed_version must be provided if specifying custom versions."
+    echo "Usage: $0 <poc_name> [vulnerable_version fixed_version]"
+    exit 1
+elif [ $# -ge 3 ]; then
+    VULN_VER="$2"
+    FIXED_VER="$3"
+else
+    VULN_VER="v1.7.15"
+    FIXED_VER="v1.7.18"
+fi
+
+# Standardize filenames whether user inputs 'poc1' or 'poc1.c'
+if [[ "$POC_INPUT" == *.c ]]; then
+    POC_SRC="$POC_INPUT"
+    POC_BIN="${POC_INPUT%.c}"
+else
+    POC_SRC="${POC_INPUT}.c"
+    POC_BIN="$POC_INPUT"
+fi
+
+if [ ! -f "$POC_SRC" ]; then
+    echo "Error: Source file '$POC_SRC' not found in current directory."
+    exit 1
+fi
+
+echo "*** Test vulnerable $VULN_VER"
+
+(cd ../cjson/ && git checkout "$VULN_VER" && git status)
+gcc -g -O0 -I../cjson ../cjson/cJSON.c "$POC_SRC" -o "$POC_BIN" -lm
+
+# Allow script to continue even if the PoC crashes/segfaults
+set +e
+./"$POC_BIN"
+EXIT_CODE_VULN=$?
+set -e
+
+echo "*** Test fix on $FIXED_VER"
+
+(cd ../cjson/ && git checkout "$FIXED_VER" && git status)
+gcc -g -O0 -I../cjson ../cjson/cJSON.c "$POC_SRC" -o "$POC_BIN" -lm
+
+set +e
+./"$POC_BIN"
+EXIT_CODE_FIX=$?
+set -e
+echo "SUMMARY:"
+echo "Exit code ($VULN_VER): $EXIT_CODE_VULN"
+echo "Exit code ($FIXED_VER): $EXIT_CODE_FIX"

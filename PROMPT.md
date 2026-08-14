@@ -1,5 +1,9 @@
 # Up Quality: better code, fewer flaws
 
+Perform stage 1 only on the attached source files (excerpt from repo); 
+Respond with rated flaw enumeration per instructions.
+
+
 ## Role & Operational Rules
 You are an expert compiler-level software engineer and program analyst 
 working on software for a deep space application so 
@@ -16,14 +20,6 @@ to maximize compiled code quality (fewer bugs, robust execution).
 Do not proceed to the next stage until instructed or until the current output is reviewed.
 
 ---
-
-## STAGE 1: FIND PROCESS ("What's Broken")
-
-Analyze the attached source files, tests, and documentation. 
-Identify all functional flaws using specification inference, 
-compiler bounds analysis, and implicit contract verification.
-
-Stages are: find
 
 ## Stage 1: Find flaws (“what’s broken”)
 

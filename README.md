@@ -108,3 +108,22 @@ python3 -m cybergym.eval --task-id cjson_bug_01 --source-path ../justbugs/cjson
 - CyberGym Repository & Setup Instructions: [https://github.com/sunblaze-ucb/cybergym](https://github.com/sunblaze-ucb/cybergym)
 - CyberGym E2E Evaluation Methodology: [https://arxiv.org/abs/2606.04460](https://arxiv.org/abs/2606.04460)
 
+# EXPERIMENTAL NOTES
+
+This experiment is a proof of principle done on the cheap to document
+step by step by hand, and because I have very limited tokens available.
+
+Modifying code in `cjson2` directory (`cjson` is original for reference).
+A smarter setup would have been better but this is simple and effective.
+
+The idea in a nutshell:
+* develop a crude *quality code* enhancing [prompt](./PROMPT.md)
+* use the three stage process to fix up code quality in cjson
+* create a regression test for a cybergym example of vulnerable code
+* see if the vulnerability got fixes incidentally or not
+
+https://gemini.google.com/app/77ac4d2713492498
+
+## cJSON_Utils fixing
+
+* create `more_tests.c` additional testing to validate changes better

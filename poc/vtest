@@ -24,13 +24,15 @@ else
     FIXED_VER="v1.7.18"
 fi
 
+BUILD=./build/
+
 # Standardize filenames whether user inputs 'poc1' or 'poc1.c'
 if [[ "$POC_INPUT" == *.c ]]; then
     POC_SRC="$POC_INPUT"
-    POC_BIN="${POC_INPUT%.c}"
+    POC_BIN="$BUILD${POC_INPUT%.c}"
 else
     POC_SRC="${POC_INPUT}.c"
-    POC_BIN="$POC_INPUT"
+    POC_BIN="$BUILD$POC_INPUT"
 fi
 
 if [ ! -f "$POC_SRC" ]; then
@@ -39,6 +41,8 @@ if [ ! -f "$POC_SRC" ]; then
 fi
 
 echo "*** Test vulnerable $VULN_VER"
+
+mkdir -p $BUILD
 
 (cd ../cjson/ && git checkout "$VULN_VER" && git status)
 gcc -g -O0 -I../cjson ../cjson/cJSON.c "$POC_SRC" -o "$POC_BIN" -lm

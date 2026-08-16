@@ -1,10 +1,25 @@
 # Code flaw reduction via quality improvement
 
+The goal of this simple experiment is to experiment with was of fixing
+software vulnerabilities without having to find them first.
+
+To test various methods we start with known vulnerable code with 
+Proof of Concept (POC) repros demonstrating flaws potentially exploitable. 
+
+cJSON is a popular JSON parser library part of a suite used to test LLM
+capabilities to find vulnerabilities. v1.7.15 is vulnerable to the POCs;
+v1.7.18 is not. Script `./poc/vtest` confirms this.
+
+
+
+## File organization
+
 All script commands start in project root directory
 
 * ./
   * ./cjson/   # cJSON repo
   * ./poc/     # proof of concept testing
+  * ./qual/    # modified code based on cjson v1.7.15 (known vulnerable)
 
 ## Setup cJSON
 

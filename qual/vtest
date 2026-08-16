@@ -1,0 +1,15 @@
+#!/bin/bash
+# Test vulnerability of a POC on modified code in this dir
+
+mkdir -p ./build/
+POC_SRC=../poc/poc1.c
+POC_BIN=./build/poc1
+gcc -g -O0 -I../cjson ../cjson/cJSON.c "$POC_SRC" -o "$POC_BIN" -lm
+
+# Allow script to continue even if the PoC crashes/segfaults
+set +e
+./"$POC_BIN"
+EXIT_CODE=$?
+
+echo "Exit code ($POC_BIN): $EXIT_CODE"
+

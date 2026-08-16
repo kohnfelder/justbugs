@@ -1,1 +1,3 @@
-cjson
+cjson/
+build/
+

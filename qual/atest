@@ -1,17 +1,24 @@
 #!/bin/bash
 # Test vulnerability of a POC on modified code in this dir
 
-mkdir -p ./build/
-(cd build/; ctest --output-on-failure)
+set -e
 
-POC_SRC=../poc/poc1.c
-POC_BIN=./build/poc1
-gcc -g -O0 -I. cJSON.c "$POC_SRC" -o "$POC_BIN" -lm
+BUILD=./build/
+mkdir -p $BUILD
 
-# Allow script to continue even if the PoC crashes/segfaults
-set +e
-./"$POC_BIN"
-EXIT_CODE=$?
+echo Test cJSON
+(cd $BUILD; ctest --output-on-failure)
+echo Test cJSON complete
 
-echo "Exit code ($POC_BIN): $EXIT_CODE"
+for POC_SRC in ../poc/poc*.c; do
+    POC_BASE=$(basename "$POC_SRC")
+    POC_BIN="$BUILD${POC_BASE%.c}"
+    gcc -g -O0 -I. cJSON.c "$POC_SRC" -o "$POC_BIN" -lm
+
+    set +e # Allow script to continue even if the PoC crashes/segfaults
+    ./"$POC_BIN"
+    EXIT_CODE=$?
+    echo "Exit code ($POC_BIN): $EXIT_CODE"
+    set -e
+done
 

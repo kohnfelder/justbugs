@@ -38,6 +38,7 @@
 #endif
 
 #include <string.h>
+#include <limits.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -400,21 +401,23 @@ CJSON_PUBLIC(double) cJSON_SetNumberHelper(cJSON *object, double number)
 CJSON_PUBLIC(char*) cJSON_SetValuestring(cJSON *object, const char *valuestring)
 {
     char *copy = NULL;
+
     /* if object's type is not cJSON_String or is cJSON_IsReference, it should not set valuestring */
-    if (!(object->type & cJSON_String) || (object->type & cJSON_IsReference))
+    if ((object == NULL) || (valuestring == NULL) || !(object->type & cJSON_String) || (object->type & cJSON_IsReference))
     {
         return NULL;
     }
-    if (strlen(valuestring) <= strlen(object->valuestring))
-    {
-        strcpy(object->valuestring, valuestring);
-        return object->valuestring;
-    }
+
+    /* 
+     * FIX: Always allocate a new buffer via cJSON_strdup instead of relying on
+     * strlen(object->valuestring) for capacity, preventing heap buffer overwrites.
+     */
     copy = (char*) cJSON_strdup((const unsigned char*)valuestring, &global_hooks);
     if (copy == NULL)
     {
         return NULL;
     }
+
     if (object->valuestring != NULL)
     {
         cJSON_free(object->valuestring);
@@ -1837,6 +1840,7 @@ CJSON_PUBLIC(int) cJSON_GetArraySize(const cJSON *array)
     {
         size++;
         child = child->next;
+    if (size > (size_t)INT_MAX) return INT_MAX;
     }
 
     /* FIXME: Can overflow here. Cannot be fixed without breaking the API */

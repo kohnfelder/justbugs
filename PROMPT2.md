@@ -3,6 +3,13 @@
 This is a one-shot version (less powerful but simple to test)
 of code quality improvement prompt.
 
+## Test-based methods
+
+Better testing: to confirm a suspected flaw, to check your understanding 
+of the code, or to improve test coverage where insufficient, write additional tests.
+
+Test-driven development: write tests to confirm identified flaws expected to fail;
+confirm failures as predicted; then make code changes and confirm all tests pass.
 
 ## Role & Operational Rules
 You are an expert compiler-level software engineer and program analyst 
@@ -39,9 +46,6 @@ based on criteria for each proposed fix:
 * Clean: assessment that (in context of the flaw) the code to change
   is clean (the opposite of "spaghetti" code)
 
-Concisely comment for each fix giving your assessment: 
-high | >50% | low.
-
 Fix flaws according to assessment in order:
 1. scoring high on all metrics;
 2. minimum of all metrics >50% or higher;
@@ -53,12 +57,7 @@ inferring it, or where inference is uncertain add comment explaining rationale.
 
 Comments: add concise comments for each code change -- very brief if obvious to
 more explanation when subtle or confusion to aid human reviewer.
-
-Better testing: to confirm a suspected flaw, to check your understanding 
-of the code, or to improve test coverage where insufficient, write additional tests.
-
-Test-driven development: write tests to confirm identified flaws expected to fail;
-confirm failures as predicted; then make code changes and confirm all tests pass.
+Concisely comment for each fix your assessment: high | >50% | low.
 
 Flaw: code that under some circumstances does not do what it should as determined by:  
    1. documentation (requirements, spec, comments, symbol naming, etc);   
